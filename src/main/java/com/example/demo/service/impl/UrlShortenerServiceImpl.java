@@ -1,48 +1,60 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.domain.UrlModel;
+import com.example.demo.dto.LongUrlRequestDto;
 import com.example.demo.repository.UrlRepository;
 import com.example.demo.service.interfaces.UrlShortenerService;
 import com.google.common.hash.Hashing;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Service
 @AllArgsConstructor
-@Slf4j
 public class UrlShortenerServiceImpl implements UrlShortenerService {
+
     private final UrlRepository urlRepository;
+    private static final int MILLIS_IN_MIN = 600000;
 
     @Override
     public RedirectView localRedirect(String shortUrl) {
         RedirectView redirectView = new RedirectView();
-        redirectView.setUrl(urlRepository.findFirstByShortUrl(shortUrl).getLongUrl());
+        redirectView.setUrl(getLongUrlbyShort(shortUrl));
         return redirectView;
     }
 
     @Override
-    public String createUrl(String longUrl) {
-        UrlValidator urlValidator = new UrlValidator(
-                new String[]{"http", "https"});
-        if (urlValidator.isValid(longUrl)) {
-            String shortUrl = Hashing.murmur3_32().hashString(longUrl, StandardCharsets.UTF_8).toString();
+    public String createUrl(LongUrlRequestDto urlDto) {
+
+        String longUrl = urlDto.getUrl();
+        try {
+
+            URI uri = new URI(longUrl);
+
+            String shortUrl = Hashing.murmur3_32().hashString(uri.toASCIIString(), StandardCharsets.UTF_8).toString();
+
             createAndSaveUrlModel(longUrl, shortUrl);
-            return "http://localhost:8080/api/" + shortUrl;
+
+            return shortUrl;
+        } catch (URISyntaxException | NullPointerException e) {
+            throw new RuntimeException("Invalid URL");
         }
-        throw new RuntimeException("Invalid URL");
     }
 
     @Transactional
     @Override
     public String checkTimer(String shortUrl) {
+
         long current = System.currentTimeMillis();
-        int MILLIS_IN_MIN = 600000;
+
+
         if (urlRepository.existsByShortUrl(shortUrl)) {
             if (urlRepository.findFirstByShortUrl(shortUrl).getTimer() > current - MILLIS_IN_MIN) {
                 return urlRepository.findFirstByShortUrl(shortUrl).getLongUrl();
@@ -52,6 +64,10 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
         } else return "This short URL has not been created";
     }
 
+    private String getLongUrlbyShort(String shortUrl) {
+        return urlRepository.findFirstByShortUrl(shortUrl).getLongUrl();
+    }
+
     /**
      * Создание сущности Url и сохранение в базе.
      *
@@ -59,10 +75,11 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
      * @param shortUrl короткий url
      */
     private void createAndSaveUrlModel(String longUrl, String shortUrl) {
-        UrlModel urlModel = new UrlModel();
-        urlModel.setShortUrl(shortUrl);
-        urlModel.setLongUrl(longUrl);
-        urlModel.setTimer(System.currentTimeMillis());
+        UrlModel urlModel = UrlModel.builder()
+                .shortUrl(shortUrl)
+                .longUrl(longUrl)
+                .timer(System.currentTimeMillis())
+                .build();
         urlRepository.save(urlModel);
     }
 }

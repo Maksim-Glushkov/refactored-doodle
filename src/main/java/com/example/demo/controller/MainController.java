@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.impl.UrlShortenerServiceImpl;
+import com.example.demo.dto.LongUrlRequestDto;
+import com.example.demo.service.interfaces.UrlShortenerService;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,30 +12,37 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+import static com.example.demo.constants.ApiPaths.MAIN_API;
+
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping(MAIN_API)
 @AllArgsConstructor
 public class MainController {
-    private final UrlShortenerServiceImpl urlServiceImpl;
+    private final UrlShortenerService shortenerService;
 
-
-    @GetMapping("/getlong/{shortUrl}")
-    public ResponseEntity<String> getUrl(@PathVariable String shortUrl) {
-        String resultUrl = urlServiceImpl.checkTimer(shortUrl);
+    @GetMapping("/getLong")
+    public ResponseEntity<String> getUrl(@RequestBody String shortUrl) {
+        String resultUrl = shortenerService.checkTimer(shortUrl);
         return ResponseEntity.ok(resultUrl);
     }
 
-    @RequestMapping("/{shortUrl}")
+    @GetMapping("/{shortUrl}")
     public RedirectView localRedirect(@PathVariable String shortUrl) {
-        return urlServiceImpl.localRedirect(shortUrl);
+        return shortenerService.localRedirect(shortUrl);
     }
 
 
-    @PostMapping()
-    public ResponseEntity<String> create(@RequestBody String longUrl) {
-        String createdShortUrl = urlServiceImpl.createUrl(longUrl);
+    @PostMapping("/create")
+    public ResponseEntity<String> create(@RequestBody LongUrlRequestDto longUrl) {
+        String createdShortUrl =
+                shortenerService.createUrl(longUrl);
         return ResponseEntity.ok(createdShortUrl);
+    }
+
+    @GetMapping("/debug")
+    public ResponseEntity<String> debug(){
+        return ResponseEntity.ok("working");
     }
 }
 

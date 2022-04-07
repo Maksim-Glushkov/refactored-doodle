@@ -9,7 +9,7 @@ public interface UrlRepository extends JpaRepository<UrlModel, Long> {
 
     UrlModel findFirstByShortUrl(String shortUrl);
 
-    void deleteById(int id);
+    void deleteById(long id);
 
     boolean existsByShortUrl(String shortUrl);
 

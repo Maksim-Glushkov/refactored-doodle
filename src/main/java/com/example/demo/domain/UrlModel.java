@@ -1,5 +1,7 @@
 package com.example.demo.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,23 +11,27 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
 
 @Entity
-@Table(name = "urls")
 @Data
+@Builder
+@Table(name = "urls")
+@AllArgsConstructor
 @NoArgsConstructor
-public class UrlModel implements Serializable {
+public class UrlModel {
 
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
-    @Column(name = "shortUrl", unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(name = "short_url")
     private String shortUrl;
-    @Column(name = "longUrl", unique = true)
+
+    @Column(name = "long_url")
     private String longUrl;
-    @Column(name = "timeOfBirth", unique = true)
+
+    @Column(name = "date_of_creation")
     private long timer;
 
 }
