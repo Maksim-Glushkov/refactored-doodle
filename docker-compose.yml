@@ -1,10 +1,10 @@
 version: "3"
 services:
   app:
-    image: 'url-shortner:latest'
+    image: 'url-shortener:latest'
     build:
       context: .
-    container_name: url-shortner
+    container_name: url-shortener
     depends_on:
       - db
     environment:
@@ -13,7 +13,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
-    - "8080:8080"
+      - "8080:8080"
   db:
     image: "postgres:12"
     environment:
@@ -21,4 +21,4 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
     ports:
-      - "5432:5432"
+      - "5412:5432"

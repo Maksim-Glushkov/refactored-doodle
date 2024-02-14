@@ -1,3 +1,3 @@
 # refactored-doodle
-1.gradlew build
+1.docker build -t url-shortener .
 2.docker-compose up

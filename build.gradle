@@ -31,5 +31,5 @@ tasks.named('test') {
 }
 ext {
 	set('testcontainersVersion', "1.15.3")
-	javaVersion = '11'
+	javaVersion = '21'
 }
